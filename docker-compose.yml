@@ -1,0 +1,65 @@
+version: "3.9"
+
+services:
+  nginx-service:
+    build:
+      context: docker/nginx
+      dockerfile: Dockerfile
+    container_name: nginx-container
+    restart: on-failure
+    volumes:
+      # mount the api folder which contains the code to the docker container
+      - ${PWD}/api:/var/www/api
+      # nginx logs without have to logging into the container
+      - ${PWD}/var/logs/nginx/:/var/log/nginx
+      # server config to serve the api
+      - ${PWD}/docker/nginx/api.conf:/etc/nginx/conf.d/api.conf
+    ports:
+      - "9000:80"
+    depends_on:
+      - api-container
+      - ui-container
+    networks:
+      - kitten-homecoming
+
+  api-service:
+    build:
+      context: docker/php
+      dockerfile: Dockerfile
+      args:
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
+    container_name: api-container
+    restart: on-failure
+    volumes:
+      # api folder which contains the code to the docker container
+      - ${PWD}/api:/var/www/api
+      # custom php.ini into the container
+      - ${PWD}/docker/php/php.ini:/usr/local/etc/php/php.ini
+    networks:
+      - kitten-homecoming
+
+  ui-service:
+    build: ./ui
+    container_name: ui-container
+    restart: on-failure
+    # below line starts the project
+    command: "npm start"
+    depends_on:
+      - api-container
+    volumes:
+      # this will mount the ui folder which contains the code to the docker container
+      - ${PWD}/ui:/var/www/ui
+      # this will mount the node_modules folder for faster performance
+      - nodemodules:/var/www/ui/node_modules
+    ports:
+    - "3000:3000"
+    networks:
+      - kitten-homecoming
+
+networks:
+  kitten-homecoming:
+    driver: bridge
+
+volumes:
+  nodemodules: {}

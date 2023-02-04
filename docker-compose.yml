@@ -1,0 +1,46 @@
+version: "3.9"
+
+networks:
+  kitten-homecoming:
+    driver: bridge
+
+services:
+  nginx_service:
+    build:
+      context: ./
+      dockerfile: ./docker/nginx/Dockerfile
+    container_name: nginx_container
+    volumes:
+      - ${PWD}/docker/nginx/config/api.conf:/etc/nginx/conf.d/api.conf
+      - ${PWD}/api:/var/www/api
+    ports:
+      - "9000:80"
+    networks:
+      - kitten-homecoming
+
+  php_service:
+    build:
+      context: ./
+      dockerfile: ./docker/php/Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    container_name: php_container
+    volumes:
+      - ${PWD}/api:/var/www/api
+    networks:
+      - kitten-homecoming
+  #database_service:
+
+  ui_service:
+    build:
+      context: ./
+      dockerfile: ./docker/ui/Dockerfile
+    container_name: ui_container
+    restart: on-failure
+    command: "npm run dev"
+    volumes:
+      - ${PWD}/ui:/var/www/ui
+    ports:
+      - "5173:5173"
+    networks:
+      - kitten-homecoming

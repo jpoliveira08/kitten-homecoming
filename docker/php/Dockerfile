@@ -1,7 +1,5 @@
 FROM php:8.2-fpm-alpine
 
-COPY docker/php/config/xdebug.ini /etc/php8/conf.d/50_xdebug.ini
-
 RUN apk update \
     && apk add git \
         curl \
@@ -21,6 +19,8 @@ RUN docker-php-ext-install intl opcache bcmath sockets
 RUN docker-php-ext-enable xdebug intl opcache bcmath sockets
 RUN rm -rf /var/lib/apt/lists/*
 
+COPY docker/php/config/90-xdebug.ini "${PHP_INI_DIR}/conf.d"
+
 # Set timezone
 ENV TIMEZONE=Etc/UCT
 RUN ln -snf /usr/share/zoneinfo/${TIMEZONE} /etc/localtime && echo ${TIMEZONE} > /etc/timezone \
@@ -33,7 +33,6 @@ RUN composer selfupdate
 
 CMD ["php-fpm", "-F"]
 
-COPY docker/php/config/xdebug.ini /etc/php8.2/conf.d/50_xdebug.ini
 COPY ../../api /var/www/api
 
 WORKDIR /var/www/api

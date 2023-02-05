@@ -1,13 +1,9 @@
 <?php
 
-function somar(int $number, int $number2) {
-    $total = $number + $number2;
+use App\Kernel;
 
-    return $total;
-}
+require_once dirname(__DIR__).'/vendor/autoload_runtime.php';
 
-$soma = somar(1, 2);
-
-echo $soma;
-
-xdebug_info();
+return function (array $context) {
+    return new Kernel($context['APP_ENV'], (bool) $context['APP_DEBUG']);
+};

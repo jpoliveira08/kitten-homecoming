@@ -7,39 +7,42 @@ networks:
 services:
   nginx_service:
     build:
-      context: ./
+      context: .
       dockerfile: ./docker/nginx/Dockerfile
     container_name: nginx_container
     volumes:
       - ${PWD}/docker/nginx/config/api.conf:/etc/nginx/conf.d/api.conf
-      - ${PWD}/api:/var/www/api
+      - ${PWD}/api:/var/www/kitten-homecoming/api
     ports:
-      - "9000:80"
+      - "8000:80"
     networks:
       - kitten-homecoming
 
   php_service:
     build:
-      context: ./
+      context: .
       dockerfile: ./docker/php/Dockerfile
+      args:
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     container_name: php_container
     volumes:
-      - ${PWD}/api:/var/www/api
+      - ${PWD}/api:/var/www/kitten-homecoming/api
     networks:
       - kitten-homecoming
   #database_service:
 
   ui_service:
     build:
-      context: ./
+      context: .
       dockerfile: ./docker/ui/Dockerfile
     container_name: ui_container
     restart: on-failure
     command: "npm run dev"
     volumes:
-      - ${PWD}/ui:/var/www/ui
+      - ${PWD}/ui:/var/www/kitten-homecoming/ui
     ports:
       - "5173:5173"
     networks:

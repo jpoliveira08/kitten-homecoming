@@ -33,8 +33,20 @@ RUN composer selfupdate
 
 CMD ["php-fpm", "-F"]
 
-COPY ../../api /var/www/api
+# PHP container didn't have the correct permissions to write to the filesystem
+ARG UID
+ARG GID
+ENV UID=${UID}
+ENV GID=${GID}
+RUN addgroup -g ${GID} --system symfony
+RUN adduser -G symfony --system -D -s /bin/sh -u ${UID} symfony
+RUN sed -i "s/user = www-data/user = symfony/g" /usr/local/etc/php-fpm.d/www.conf
+RUN sed -i "s/group = www-data/group = symfony/g" /usr/local/etc/php-fpm.d/www.conf
 
-WORKDIR /var/www/api
+COPY api/ /var/www/kitten-homecoming/api/
+
+WORKDIR /var/www/kitten-homecoming/api
 
 EXPOSE 9000
+
+USER symfony

@@ -1,7 +1,10 @@
+import React from 'react';
+import { Header } from './components/common';
+
 function App() {
     return (
         <div>
-            <h2>Home page</h2>
+            <Header />
         </div>
     );
 }
